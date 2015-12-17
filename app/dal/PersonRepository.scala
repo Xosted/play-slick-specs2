@@ -8,15 +8,28 @@ import models.Person
 
 import scala.concurrent.{ Future, ExecutionContext }
 
+import play.api.Play
+import com.google.inject.ImplementedBy
+
+@ImplementedBy(classOf[WithProdDB])
+trait WithDB {
+	def getDBConfig: slick.backend.DatabaseConfig[JdbcProfile]
+}
+
+class WithProdDB extends WithDB {
+  protected val dbConfig: slick.backend.DatabaseConfig[JdbcProfile] = DatabaseConfigProvider.get[JdbcProfile]("default")(Play.current)
+  override def getDBConfig: slick.backend.DatabaseConfig[JdbcProfile] = dbConfig
+}
+
 /**
  * A repository for people.
  *
  * @param dbConfigProvider The Play db config provider. Play will inject this for you.
  */
 @Singleton
-class PersonRepository @Inject() (dbConfigProvider: DatabaseConfigProvider)(implicit ec: ExecutionContext) {
+class PersonRepository @Inject() (dbConfigProvider: WithDB)(implicit ec: ExecutionContext) {
   // We want the JdbcProfile for this provider
-  private val dbConfig = dbConfigProvider.get[JdbcProfile]
+  private val dbConfig = dbConfigProvider.getDBConfig
 
   // These imports are important, the first one brings db into scope, which will let you do the actual db operations.
   // The second one brings the Slick DSL into scope, which lets you define the table and other queries.
