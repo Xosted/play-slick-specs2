@@ -23,9 +23,9 @@ class PersonRepositoryTestSpec extends PlaySpecification with Inject {
 
 		"contain the right amount of people." in  {
 		  println("IN TEST "+ await(repo.list).length)
-//			await(repo.create("John Doe",25))
-//			await(repo.list).length must beEqualTo(0)
-ok
+			await(repo.create("John Doe",25))
+			await(repo.list).length must beEqualTo(0)
+//ok
 		}
   }
 }
